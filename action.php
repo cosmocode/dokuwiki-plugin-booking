@@ -67,7 +67,11 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
                 $this->addBooking($id, $_REQUEST['date'] . ' ' . $_REQUEST['time'], $_REQUEST['length']);
             } elseif ($_REQUEST['do'] == 'cancel') {
                 $this->cancelBooking($id, (int)$_REQUEST['at']);
+            } elseif ($_REQUEST['do'] == 'csv' && $this->issuperuser) {
+                $this->exportCSV($id);
+                exit();
             }
+
         }
 
         $this->outputHTML($id);
@@ -111,6 +115,32 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
         } else {
             msg('No booking was cancelled', -1);
         }
+    }
+
+    /**
+     * Export all bookings as CSV
+     *
+     * @param string $id
+     */
+    protected function exportCSV($id)
+    {
+        header('Content-Type', 'text/csv;charset=utf-8');
+        header('Content-Disposition: attachment;filename=' . noNS($id) . '.csv');
+        $bookings = $this->helper->getBookings($id);
+
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['start', 'end', 'user']);
+        foreach ($bookings as $booking) {
+            fputcsv(
+                $out,
+                [
+                    date('Y-m-d H:i', $booking['start']),
+                    date('Y-m-d H:i', $booking['end']),
+                    $booking['user']
+                ]
+            );
+        }
+        fclose($out);
     }
 
     /**
@@ -186,6 +216,10 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
             echo '</tr>';
         }
         echo '</table>';
+
+        if($this->issuperuser) {
+            echo '<a href="' . DOKU_BASE . 'lib/exe/ajax.php?call=plugin_booking&do=csv">Download CSV***</a>';
+        }
     }
 }
 
