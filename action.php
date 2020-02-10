@@ -60,7 +60,7 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
             http_status('403', 'Bookings not accessible to you');
             exit;
         }
-        if ($perm = AUTH_ADMIN) $this->issuperuser = true;
+        if ($perm == AUTH_ADMIN) $this->issuperuser = true;
 
         if (isset($_REQUEST['do'])) {
             if ($_REQUEST['do'] == 'book') {
