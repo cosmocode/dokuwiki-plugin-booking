@@ -27,7 +27,7 @@ class helper_plugin_booking extends DokuWiki_Plugin
     {
         global $conf;
         $id = cleanID($id);
-        $file = $conf['metadir'] .'/'. utf8_encodeFN(str_replace(':', '/', "$id.booking"));
+        $file = $conf['metadir'] . '/' . utf8_encodeFN(str_replace(':', '/', "$id.booking"));
         return $file;
     }
 
@@ -56,7 +56,7 @@ class helper_plugin_booking extends DokuWiki_Plugin
             if ($to) {
                 // list all overlapping bookings
                 if ($start > $to) continue;
-                if ($end < $from) continue;
+                if ($end <= $from) continue;
             } else {
                 // list all beginning at start
                 if ($start < $from) continue;
@@ -124,5 +124,36 @@ class helper_plugin_booking extends DokuWiki_Plugin
         file_put_contents($file, $line, FILE_APPEND);
     }
 
+    /**
+     * Cancel a booking
+     *
+     * The booking line is replaced by spaces in the file
+     *
+     * @param string $id The booking resource
+     * @param string $at The start time of the booking to cancel
+     * @return bool Was any booking canceled?
+     */
+    public function cancelBooking($id, $at)
+    {
+        $file = $this->getFile($id);
+        if (!file_exists($file)) return false;
+
+        $fh = fopen($file, 'r+');
+        if (!$fh) return false;
+
+        $at = strtotime($at);
+        while (($line = fgets($fh, 4096)) !== false) {
+            list($start, ,) = explode("\t", $line, 3);
+            if ($start != $at) continue;
+
+            $len = strlen($line); // length of line (includes newline)
+            fseek($fh, -1 * $len, SEEK_CUR); // jump back to beginning of line
+            fwrite($fh, str_pad('', $len - 1)); // write spaces instead (keep new line)
+            return true;
+        }
+        fclose($fh);
+
+        return false;
+    }
 }
 

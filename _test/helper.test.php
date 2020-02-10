@@ -26,7 +26,7 @@ class booking_plugin_booking_test extends DokuWikiTest
         }
         $this->assertTrue($ok);
 
-        $this->assertFileExists($conf['metadir'].'/test/book.booking');
+        $this->assertFileExists($conf['metadir'] . '/test/book.booking');
     }
 
     /**
@@ -54,4 +54,29 @@ class booking_plugin_booking_test extends DokuWikiTest
         $hlp->addBooking('test:book', '2020-12-17 13:20', '1.5h', 'andi');
     }
 
+
+    public function test_bookAndCancel()
+    {
+        /** @var helper_plugin_booking $hlp */
+        $hlp = plugin_load('helper', 'booking');
+
+        // add three bookings
+        $hlp->addBooking('test:run', '2020-12-17 13:00', '1.5h', 'andi');
+        $hlp->addBooking('test:run', '2020-12-17 14:30', '1.5h', 'andi');
+        $hlp->addBooking('test:run', '2020-12-17 16:00', '1.5h', 'andi');
+
+        $bookings = $hlp->getBookings('test:run');
+        $this->assertSame(3, count($bookings));
+
+        // cancel a booking
+        $ok = $hlp->cancelBooking('test:run', '2020-12-17 14:30');
+        $this->assertTrue($ok);
+
+        // cancel a non-existent booking
+        $ok = $hlp->cancelBooking('test:run', '2020-12-17 14:33');
+        $this->assertFalse($ok);
+
+        $bookings = $hlp->getBookings('test:run');
+        $this->assertSame(2, count($bookings));
+    }
 }
