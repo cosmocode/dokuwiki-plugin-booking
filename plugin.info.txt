@@ -1,0 +1,7 @@
+base   booking
+author Andreas Gohr
+email  dokuwiki@cosmocode.de
+date   2020-02-10
+name   booking plugin
+desc   Resource booking plugin
+url    https://www.dokuwiki.org/plugin:booking
