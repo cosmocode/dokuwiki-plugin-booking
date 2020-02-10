@@ -58,15 +58,20 @@ class helper_plugin_booking extends DokuWiki_Plugin
                 if ($start > $to) continue;
                 if ($end <= $from) continue;
             } else {
-                // list all beginning at start
-                if ($start < $from) continue;
+                // list all bookings that have not been ended at $from
+                if ($end < $from) continue;
             }
 
-            $bookings[] = [$start, $end, $user];
+            // we use the start time as index, for sorting
+            $bookings[$start] = [
+                'start' => $start,
+                'end' => $end,
+                'user' => $user];
         }
 
         fclose($fh);
 
+        ksort($bookings);
         return $bookings;
     }
 
@@ -130,10 +135,11 @@ class helper_plugin_booking extends DokuWiki_Plugin
      * The booking line is replaced by spaces in the file
      *
      * @param string $id The booking resource
-     * @param string $at The start time of the booking to cancel
+     * @param string|int $at The start time of the booking to cancel. Use int for timestamp
+     * @param string|null $user Only cancel if the user matches, null for no check
      * @return bool Was any booking canceled?
      */
-    public function cancelBooking($id, $at)
+    public function cancelBooking($id, $at, $user=null)
     {
         $file = $this->getFile($id);
         if (!file_exists($file)) return false;
@@ -141,10 +147,15 @@ class helper_plugin_booking extends DokuWiki_Plugin
         $fh = fopen($file, 'r+');
         if (!$fh) return false;
 
-        $at = strtotime($at);
+        // we support ints and time strings
+        if (!is_int($at)) {
+            $at = strtotime($at);
+        }
+
         while (($line = fgets($fh, 4096)) !== false) {
-            list($start, ,) = explode("\t", $line, 3);
+            list($start, ,$booker) = explode("\t", $line, 3);
             if ($start != $at) continue;
+            if ($user && $user != trim($booker)) continue;
 
             $len = strlen($line); // length of line (includes newline)
             fseek($fh, -1 * $len, SEEK_CUR); // jump back to beginning of line

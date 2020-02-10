@@ -18,15 +18,7 @@ class syntax_plugin_booking extends DokuWiki_Syntax_Plugin
      */
     public function getType()
     {
-        return 'FIXME: container|baseonly|formatting|substition|protected|disabled|paragraphs';
-    }
-
-    /**
-     * @return string Paragraph type
-     */
-    public function getPType()
-    {
-        return 'FIXME: normal|block|stack';
+        return 'substition';
     }
 
     /**
@@ -34,7 +26,7 @@ class syntax_plugin_booking extends DokuWiki_Syntax_Plugin
      */
     public function getSort()
     {
-        return FIXME;
+        return 155;
     }
 
     /**
@@ -44,14 +36,9 @@ class syntax_plugin_booking extends DokuWiki_Syntax_Plugin
      */
     public function connectTo($mode)
     {
-        $this->Lexer->addSpecialPattern('<FIXME>', $mode, 'plugin_booking');
-//        $this->Lexer->addEntryPattern('<FIXME>', $mode, 'plugin_booking');
+        $this->Lexer->addSpecialPattern('{{booking}}', $mode, 'plugin_booking');
     }
 
-//    public function postConnect()
-//    {
-//        $this->Lexer->addExitPattern('</FIXME>', 'plugin_booking');
-//    }
 
     /**
      * Handle matches of the booking syntax
@@ -66,7 +53,6 @@ class syntax_plugin_booking extends DokuWiki_Syntax_Plugin
     public function handle($match, $state, $pos, Doku_Handler $handler)
     {
         $data = array();
-
         return $data;
     }
 
@@ -84,6 +70,8 @@ class syntax_plugin_booking extends DokuWiki_Syntax_Plugin
         if ($mode !== 'xhtml') {
             return false;
         }
+
+        $renderer->doc .= '<div class="plugin_booking">loading...</div>';
 
         return true;
     }
