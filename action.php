@@ -90,9 +90,9 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
 
         try {
             $this->helper->addBooking($id, $start, $length, $_SERVER['REMOTE_USER']);
-            msg('Resource booked***', 1);
+            msg($this->getLang('booked'), 1);
         } catch (Exception $e) {
-            msg($e->getMessage() . '***', -1);
+            msg($this->getLang('exception' . $e->getCode()), -1);
         }
     }
 
@@ -111,9 +111,9 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
         }
 
         if ($this->helper->cancelBooking($id, $start, $user)) {
-            msg('Booking was cancelled', 1);
+            msg($this->getLang('cancelled'), 1);
         } else {
-            msg('No booking was cancelled', -1);
+            msg($this->getLang('notcancelled'), -1);
         }
     }
 
@@ -167,7 +167,7 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
     protected function showForm()
     {
         $form = new dokuwiki\Form\Form();
-        $form->addFieldsetOpen('Add Booking***');
+        $form->addFieldsetOpen($this->getLang('headline'));
         $form->addTextInput('date')
             ->attrs(['type' => 'date', 'min' => date('Y-m-d'), 'required' => 'required'])
             ->addClass('edit');
@@ -176,10 +176,10 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
             ->val(date('H', time() + 60 * 60) . ':00')
             ->addClass('edit');
         $form->addTextInput('length')
-            ->attrs(['required' => 'required'])
+            ->attrs(['required' => 'required', 'placeholder' => '1h'])
             ->val('1h')
             ->addClass('edit');
-        $form->addButton('submit', 'Book***');
+        $form->addButton('submit', $this->getLang('book'));
         $form->addFieldsetClose();
         echo $form->toHTML();
     }
@@ -192,7 +192,6 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
     protected function listBookings($id)
     {
         $bookings = $this->helper->getBookings($id, time());
-        echo '<h3>Current Bookings***</h3>';
         echo '<table class="table inline">';
         foreach ($bookings as $booking) {
             echo '<tr>';
@@ -207,7 +206,7 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
 
             echo '<td>';
             if ($booking['user'] == $_SERVER['REMOTE_USER'] || $this->issuperuser) {
-                echo '<a href="#' . $booking['start'] . '" class="cancel">' . 'Cancel***' . '</a>';
+                echo '<a href="#' . $booking['start'] . '" class="cancel">' . $this->getLang('cancel') . '</a>';
             } else {
                 echo '&nbsp;';
             }
@@ -217,8 +216,8 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
         }
         echo '</table>';
 
-        if($this->issuperuser) {
-            echo '<a href="' . DOKU_BASE . 'lib/exe/ajax.php?call=plugin_booking&do=csv">Download CSV***</a>';
+        if ($this->issuperuser) {
+            echo '<a href="' . DOKU_BASE . 'lib/exe/ajax.php?call=plugin_booking&do=csv">' . $this->getLang('csv') . '</a>';
         }
     }
 }
