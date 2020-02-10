@@ -192,7 +192,7 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
     protected function listBookings($id)
     {
         $bookings = $this->helper->getBookings($id, time());
-        echo '<table class="table inline">';
+        echo '<table>';
         foreach ($bookings as $booking) {
             echo '<tr>';
 
