@@ -68,7 +68,7 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
             } elseif ($_REQUEST['do'] == 'cancel') {
                 $this->cancelBooking($id, (int)$_REQUEST['at']);
             } elseif ($_REQUEST['do'] == 'csv' && $this->issuperuser) {
-                $this->exportCSV($id);
+                $this->exportCSV($_REQUEST['id']);
                 exit();
             }
 
@@ -217,7 +217,7 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
         echo '</table>';
 
         if ($this->issuperuser) {
-            echo '<a href="' . DOKU_BASE . 'lib/exe/ajax.php?call=plugin_booking&do=csv">' . $this->getLang('csv') . '</a>';
+            echo '<a href="' . DOKU_BASE . 'lib/exe/ajax.php?call=plugin_booking&do=csv&id=' . $id . '">' . $this->getLang('csv') . '</a>';
         }
     }
 }
