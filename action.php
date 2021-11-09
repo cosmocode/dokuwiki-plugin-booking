@@ -25,7 +25,7 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
         // Get language-specific labels for each column
         $labels = array();
         foreach($this->helper->getColumns() as $column) {
-            $labels[] = $this->getLang($column);   
+            $labels[] = $this->getLang($column);
         }
         $this->helper->setLabels($labels);
     }

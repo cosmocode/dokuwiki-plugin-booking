@@ -21,7 +21,7 @@ class helper_plugin_booking extends DokuWiki_Plugin
 
     // Labels for each displayed column
     protected $labels;
-    
+
     public function getColumns()
     {
         return $this->columns;
@@ -36,7 +36,7 @@ class helper_plugin_booking extends DokuWiki_Plugin
     {
         $this->labels = $labels;
     }
-    
+
     /**
      * Get the filename where the booking data is stored for this resource
      *
@@ -120,7 +120,7 @@ class helper_plugin_booking extends DokuWiki_Plugin
      * @param string $heading
      * @param string $use_header_row
      * @return string Returns full table html as a string
-     */    
+     */
     public function tableWrap($rows, $heading, $use_header_row=true)
     {
         // wrap table row html with heading, header, and footer
@@ -129,8 +129,8 @@ class helper_plugin_booking extends DokuWiki_Plugin
         $output = $prefix . $rows . '</table>';
         return $output;
     }
-    
-    
+
+
     /**
      * Construct table header for a booking as a string
      *
@@ -138,7 +138,7 @@ class helper_plugin_booking extends DokuWiki_Plugin
      * @return string Returns table header as a string
      */
     public function tableHeader($use_header_row=true)
-    {	
+    {
         $theader = '';
         if ($use_header_row == true) {
             foreach(array_combine($this->columns, $this->labels) as $column => $label) {
@@ -147,9 +147,9 @@ class helper_plugin_booking extends DokuWiki_Plugin
             $theader .= $this->htmlWrap('&nbsp;', 'td', 'cancel');
             $theader = $this->htmlWrap($theader, 'tr');
         }
-	
+
         $theader = '<table class="inline">'. $theader;
-	
+
         return $theader;
     }
 
@@ -177,7 +177,7 @@ class helper_plugin_booking extends DokuWiki_Plugin
             $tcell = $this->htmlWrap($tcell, 'td', $column);
             $trow = $trow . $tcell;
         }
-        
+
         if ($use_cancel_link == true) {
             $tcancel = "<a href=\"#{$booking['start']}\" class=\"cancel\">{$cancel_string}</a>";
         } else {
@@ -188,7 +188,7 @@ class helper_plugin_booking extends DokuWiki_Plugin
         $trow = $this->htmlWrap($trow, 'tr');
 
         return $trow;
-    }    
+    }
 
     /**
      * Parses simple time length strings to seconds
