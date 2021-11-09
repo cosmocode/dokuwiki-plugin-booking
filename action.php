@@ -21,6 +21,13 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
     public function __construct()
     {
         $this->helper = plugin_load('helper', 'booking');
+
+        // Get language-specific labels for each column
+        $labels = array();
+        foreach($this->helper->getColumns() as $column) {
+            $labels[] = $this->getLang($column);   
+        }
+        $this->helper->setLabels($labels);
     }
 
 
@@ -202,27 +209,14 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
     protected function listBookings($id)
     {
         $bookings = $this->helper->getBookings($id, time());
-        echo '<table>';
+
+        echo $this->helper->tableHeader($this->getConf('column labels'));
+
         foreach ($bookings as $booking) {
-            echo '<tr>';
-
-            echo '<td>';
-            echo dformat($booking['start']) . ' - ' . dformat($booking['end']);
-            echo '</td>';
-
-            echo '<td>';
-            echo userlink($booking['user']);
-            echo '</td>';
-
-            echo '<td>';
-            if ($booking['user'] == $_SERVER['REMOTE_USER'] || $this->issuperuser) {
-                echo '<a href="#' . $booking['start'] . '" class="cancel">' . $this->getLang('cancel') . '</a>';
-            } else {
-                echo '&nbsp;';
-            }
-            echo '</td>';
-
-            echo '</tr>';
+            $use_cancel_button = ($booking['user'] == $_SERVER['REMOTE_USER']) ||
+                               $this->issuperuser;
+            echo $this->helper->tableRow($booking, $use_cancel_button,
+                                         $this->getLang('cancel'));
         }
         echo '</table>';
 
