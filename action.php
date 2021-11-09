@@ -168,9 +168,19 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
     {
         $form = new dokuwiki\Form\Form();
         $form->addFieldsetOpen($this->getLang('headline'));
+
+        if ($this->getConf('add historical bookings')) {
+            // allow historical bookings for the current year or up to two
+            // months ago, whichever is earlier
+            $year = date('Y');
+            $min_date = min(strtotime("1-1-{$year}"), strtotime("-2 months"));
+        } else {
+            $min_date = time();
+        }
         $form->addTextInput('date')
-            ->attrs(['type' => 'date', 'min' => date('Y-m-d'), 'required' => 'required'])
-            ->addClass('edit');
+             ->attrs(['type' => 'date', 'min' => date('Y-m-d', $min_date), 'required' => 'required'])
+             ->addClass('edit');
+
         $form->addTextInput('time')
             ->attrs(['type' => 'time', 'required' => 'required'])
             ->val(date('H', time() + 60 * 60) . ':00')
