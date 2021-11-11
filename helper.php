@@ -16,6 +16,26 @@ class helper_plugin_booking extends DokuWiki_Plugin
     const E_NOLENGTH = 1;
     const E_OVERLAP = 2;
 
+    // List of columns to display
+    protected $columns = [ 'startend', 'user' ];
+
+    // Labels for each displayed column
+    protected $labels;
+
+    public function getColumns()
+    {
+        return $this->columns;
+    }
+
+    public function getLabels()
+    {
+        return $this->labels;
+    }
+
+    public function setLabels($labels)
+    {
+        $this->labels = $labels;
+    }
 
     /**
      * Get the filename where the booking data is stored for this resource
@@ -74,6 +94,141 @@ class helper_plugin_booking extends DokuWiki_Plugin
         ksort($bookings);
         return $bookings;
     }
+
+
+    /**
+     * Wrap a string with a given HTML wrapper
+     *
+     * @param string $text the string to be wrapped
+     * @param string $wrapper the HTML wrapper to apply to the string
+     * @return string The wrapped string
+     */
+    public function htmlWrap($text, $wrapper, $class='')
+    {
+        if ($class !== '') {
+            $output = "<{$wrapper} class=\"{$class}\">{$text}</{$wrapper}>";
+        } else {
+            $output = "<{$wrapper}>{$text}</{$wrapper}>";
+        }
+        return $output;
+    }
+
+    /**
+     * Wrap string of table rows with heading, and table header and footer
+     *
+     * @param string $rows
+     * @param string $heading
+     * @param string $use_header_row
+     * @return string Returns full table html as a string
+     */
+    public function tableWrap($rows, $heading, $use_header_row=true)
+    {
+        // wrap table row html with heading, header, and footer
+        $prefix = $this->htmlWrap($heading, 'h3');
+        $prefix .= $this->tableHeader($use_header_row);
+        $output = $prefix . $rows . '</table>';
+        return $output;
+    }
+
+
+    /**
+     * Construct table header for a booking as a string
+     *
+     * @param string $use_header_row
+     * @return string Returns table header as a string
+     */
+    public function tableHeader($use_header_row=true)
+    {
+        $theader = '';
+        if ($use_header_row == true) {
+            foreach(array_combine($this->columns, $this->labels) as $column => $label) {
+                $theader .= $this->htmlWrap($label, 'th', $column);
+            }
+            $theader .= $this->htmlWrap('&nbsp;', 'td', 'cancel');
+            $theader = $this->htmlWrap($theader, 'tr');
+        }
+
+        $theader = '<table class="inline">'. $theader;
+
+        return $theader;
+    }
+
+    /**
+     * Construct HTML for a table row for a booking as a string
+     *
+     * @param string $booking
+     * @param string $use_cancel_link
+     * @param string $cancel_string
+     * @return string Returns table row HTML as a string
+     */
+    public function tableRow($booking, $use_cancel_link=false,
+                             $cancel_string='cancel')
+    {
+        $trow = '';
+        foreach($this->columns as $column) {
+            switch($column) {
+            case "startend":
+                $tcell = dformat($booking['start']) . ' - ' . dformat($booking['end']);
+                break;
+            case "user":
+                $tcell = userlink($booking['user']);
+                break;
+            }
+            $tcell = $this->htmlWrap($tcell, 'td', $column);
+            $trow = $trow . $tcell;
+        }
+
+        if ($use_cancel_link == true) {
+            $tcancel = "<a href=\"#{$booking['start']}\" class=\"cancel\">{$cancel_string}</a>";
+        } else {
+            $tcancel = '&nbsp;';
+        }
+        $tcancel = $this->htmlWrap($tcancel, 'td', 'cancel');
+        $trow = $trow . $tcancel;
+        $trow = $this->htmlWrap($trow, 'tr');
+
+        return $trow;
+    }
+
+    /**
+     * Print previous bookings
+     * @param int $id
+     * @param string $heading
+     * @param bool $use_labels
+     */
+    public function printPreviousBookings($id, $heading, $use_labels)
+    {
+        $old_bookings = $this->getBookings($id, 0, time());
+        if (count($old_bookings) > 0) {
+            echo '<hr/>';
+            echo $this->htmlWrap($heading, 'h2');
+
+            $last_year="0";
+            $table_output = '';
+            // iterate through old bookings in reverse chronological order
+            for (end($old_bookings); key($old_bookings)!==null; prev($old_bookings)){
+                $booking = current($old_bookings);
+
+                // if the current booking has a new year, wrap the previous
+                // table rows in a table header and footer and print it.
+                $current_year = date('Y', $booking['start']);
+                if ($current_year != $last_year) {
+                    if ($last_year != "0") {
+                        echo $this->tableWrap($table_output, $last_year,
+                                              $use_labels);
+                        $table_output = '';
+                    }
+                    $last_year = $current_year;
+                }
+
+                $table_output = $this->tableRow($booking) . $table_output;             
+            }
+
+            echo $this->tableWrap($table_output, $current_year, $use_labels);
+        }
+    }
+
+
 
     /**
      * Parses simple time length strings to seconds

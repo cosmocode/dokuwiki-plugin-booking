@@ -16,6 +16,11 @@ $lang['book'] = 'Book';
 $lang['cancel'] = 'Cancel';
 $lang['csv'] = 'Download CSV';
 
+$lang['startend'] = 'Start - End';
+$lang['user'] = 'User';
+
+$lang['previousbookings'] = 'Previous Bookings';
+
 $lang['exception1'] = 'No valid length was given. Booking not created.';
 $lang['exception2'] = 'Overlapping booking already exists. Booking not created.';
 

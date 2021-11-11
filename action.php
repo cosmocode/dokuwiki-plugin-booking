@@ -21,6 +21,13 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
     public function __construct()
     {
         $this->helper = plugin_load('helper', 'booking');
+
+        // Get language-specific labels for each column
+        $labels = array();
+        foreach($this->helper->getColumns() as $column) {
+            $labels[] = $this->getLang($column);
+        }
+        $this->helper->setLabels($labels);
     }
 
 
@@ -168,9 +175,19 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
     {
         $form = new dokuwiki\Form\Form();
         $form->addFieldsetOpen($this->getLang('headline'));
+
+        if ($this->getConf('add historical bookings')) {
+            // allow historical bookings for the current year or up to two
+            // months ago, whichever is earlier
+            $year = date('Y');
+            $min_date = min(strtotime("1-1-{$year}"), strtotime("-2 months"));
+        } else {
+            $min_date = time();
+        }
         $form->addTextInput('date')
-            ->attrs(['type' => 'date', 'min' => date('Y-m-d'), 'required' => 'required'])
-            ->addClass('edit');
+             ->attrs(['type' => 'date', 'min' => date('Y-m-d', $min_date), 'required' => 'required'])
+             ->addClass('edit');
+
         $form->addTextInput('time')
             ->attrs(['type' => 'time', 'required' => 'required'])
             ->val(date('H', time() + 60 * 60) . ':00')
@@ -192,33 +209,27 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
     protected function listBookings($id)
     {
         $bookings = $this->helper->getBookings($id, time());
-        echo '<table>';
+
+        echo $this->helper->tableHeader($this->getConf('column labels'));
+
         foreach ($bookings as $booking) {
-            echo '<tr>';
-
-            echo '<td>';
-            echo dformat($booking['start']) . ' - ' . dformat($booking['end']);
-            echo '</td>';
-
-            echo '<td>';
-            echo userlink($booking['user']);
-            echo '</td>';
-
-            echo '<td>';
-            if ($booking['user'] == $_SERVER['REMOTE_USER'] || $this->issuperuser) {
-                echo '<a href="#' . $booking['start'] . '" class="cancel">' . $this->getLang('cancel') . '</a>';
-            } else {
-                echo '&nbsp;';
-            }
-            echo '</td>';
-
-            echo '</tr>';
+            $use_cancel_button = ($booking['user'] == $_SERVER['REMOTE_USER']) ||
+                               $this->issuperuser;
+            echo $this->helper->tableRow($booking, $use_cancel_button,
+                                         $this->getLang('cancel'));
         }
         echo '</table>';
 
         if ($this->issuperuser) {
             echo '<a href="' . DOKU_BASE . 'lib/exe/ajax.php?call=plugin_booking&do=csv&id=' . $id . '">' . $this->getLang('csv') . '</a>';
         }
+
+        if ($this->getConf('previous bookings')) {
+            $this->helper->printPreviousBookings($id,
+                                                 $this->getLang('previousbookings'),
+                                                 $this->getConf('column labels'));
+        }
+
     }
 }
 
