@@ -223,6 +223,13 @@ class action_plugin_booking extends DokuWiki_Action_Plugin
         if ($this->issuperuser) {
             echo '<a href="' . DOKU_BASE . 'lib/exe/ajax.php?call=plugin_booking&do=csv&id=' . $id . '">' . $this->getLang('csv') . '</a>';
         }
+
+        if ($this->getConf('previous bookings')) {
+            $this->helper->printPreviousBookings($id,
+                                                 $this->getLang('previousbookings'),
+                                                 $this->getConf('column labels'));
+        }
+
     }
 }
 

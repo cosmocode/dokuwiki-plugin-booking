@@ -191,6 +191,46 @@ class helper_plugin_booking extends DokuWiki_Plugin
     }
 
     /**
+     * Print previous bookings
+     * @param int $id
+     * @param string $heading
+     * @param bool $use_labels
+     */
+    public function printPreviousBookings($id, $heading, $use_labels)
+    {
+        $old_bookings = $this->getBookings($id, 0, time());
+        if (count($old_bookings) > 0) {
+            echo '<hr/>';
+            echo $this->htmlWrap($heading, 'h2');
+
+            $last_year="0";
+            $table_output = '';
+            // iterate through old bookings in reverse chronological order
+            for (end($old_bookings); key($old_bookings)!==null; prev($old_bookings)){
+                $booking = current($old_bookings);
+
+                // if the current booking has a new year, wrap the previous
+                // table rows in a table header and footer and print it.
+                $current_year = date('Y', $booking['start']);
+                if ($current_year != $last_year) {
+                    if ($last_year != "0") {
+                        echo $this->tableWrap($table_output, $last_year,
+                                              $use_labels);
+                        $table_output = '';
+                    }
+                    $last_year = $current_year;
+                }
+
+                $table_output = $this->tableRow($booking) . $table_output;             
+            }
+
+            echo $this->tableWrap($table_output, $current_year, $use_labels);
+        }
+    }
+
+
+
+    /**
      * Parses simple time length strings to seconds
      *
      * @param string $time
